@@ -6,15 +6,13 @@ const {mongoose} = require('./db/mongoose');
 const {App} = require('./models/app');
 const {authenticate} = require('./middleware/authenticate');
 
-const {proxy} = require('./proxy/proxy');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 //temp from test bot
 var request = require("request");
 var requestjs = require("request-json");
-// var SPACE_ID = "59c3e28fe4b020a6bfe961ae";
 
 
 
@@ -24,16 +22,16 @@ const AUTHORIZATION_API = "/oauth/token";
 app.use(bodyParser.json());
 
 
-app.post('/v1/spaces/:space/messages', authenticate, (req, res) => {
-    var APP_ID = req.app.app_id;
-    var APP_SECRET = req.app.app_secret;
+app.post('/v1/spaces/:space/messages', (req, res) => {
 
-    var space = req.params.space;
+    let app_id = req.header('x-auth-id');
+    let app_secret = req.header('x-auth');
 
-    // Build your name from the incoming JSON
-    // var myMsg = req.body.fname + " " + req.body.lname;
 
-    getJWTToken(APP_ID, APP_SECRET, function(jwt) {
+    let space = req.params.space;
+
+
+    getJWTToken(app_id, app_secret, function(jwt) {
         console.log("JWT Token :", jwt);
 
         postMessageToSpace( jwt,space, req, function(success) {
@@ -41,6 +39,7 @@ app.post('/v1/spaces/:space/messages', authenticate, (req, res) => {
                 console.log("Success 200");
                 res.sendStatus(201);
                 //res.status(200).end();
+                console.log("after response we want to store JWT in Database");
 
             } else {
                 res.status(400).end();
