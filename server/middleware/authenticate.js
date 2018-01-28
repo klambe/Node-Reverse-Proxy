@@ -1,13 +1,14 @@
-const {App} = require('./../models/app');
+const {Bot} = require('../models/bot');
 
 var authenticate = (req, res, next) => {
-    var token = req.header('x-auth');
+    var token = req.header('x-auth-id');
 
-    App.findByToken(token).then((app) => {
-        if (!app) {
-            return Promise.reject();
+    Bot.findByToken(token).then((bot) => {
+        if (!bot) {
+            return Promise.reject();//if rejected bot is not in cache
         }
-        req.app = app;
+
+        req.bot = bot;
         req.token = token;
         next();
     }).catch((e) => {
