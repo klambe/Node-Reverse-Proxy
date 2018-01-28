@@ -28,8 +28,12 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
     let app_secret = req.header('x-auth');
 
 
+
+
     let space = req.params.space;
 
+    // Build your name from the incoming JSON
+    // var myMsg = req.body.fname + " " + req.body.lname;
 
     getJWTToken(app_id, app_secret, function(jwt) {
         console.log("JWT Token :", jwt);
@@ -39,7 +43,6 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
                 console.log("Success 200");
                 res.sendStatus(201);
                 //res.status(200).end();
-                console.log("after response we want to store JWT in Database");
 
             } else {
                 res.status(400).end();
