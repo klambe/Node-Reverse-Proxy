@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const _ = require('lodash');
 
 const {mongoose} = require('./db/mongoose');
-const {App} = require('./models/app');
+const {Bot} = require('./models/bot');
 const {authenticate} = require('./middleware/authenticate');
 
 
@@ -24,8 +24,8 @@ app.use(bodyParser.json());
 
 app.post('/v1/spaces/:space/messages', (req, res) => {
 
-    let app_id = req.header('x-auth-id');
-    let app_secret = req.header('x-auth');
+    let bot_id = req.header('x-auth-id');
+    let bot_secret = req.header('x-auth');
 
 
 
@@ -35,16 +35,25 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
     // Build your name from the incoming JSON
     // var myMsg = req.body.fname + " " + req.body.lname;
 
-    getJWTToken(app_id, app_secret, function(jwt) {
-        console.log("JWT Token :", jwt);
+    getJWTToken(bot_id, bot_secret, function(jwt) {
+        console.log("got JWT! ");
 
         postMessageToSpace( jwt,space, req, function(success) {
             if (success) {
                 console.log("Success 200");
                 res.sendStatus(201);
-                //res.status(200).end();
+
+                //when successful I should save to database
+
+                var bot = new Bot({
+                    bot_id: bot_id,
+                    bot_jwt: jwt
+                });
+
+                bot.save();
 
             } else {
+                console.log("Failure 400!");
                 res.status(400).end();
             }
         })
@@ -93,7 +102,7 @@ function postMessageToSpace( accessToken,SPACE_ID, req, callback) {
     var messageData = req.body;
 
     // Calling IWW API to post message
-    console.log("Message body : %s", JSON.stringify(messageData));
+    console.log("Message Sending : ");
 
 
 

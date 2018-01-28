@@ -5,7 +5,7 @@ const {ObjectID} = require('mongodb');
 const {app} = require('./../server');
 
 //this is the App Model
-const {App} = require('./../models/app');
+const {App} = require('../models/bot');
 
 const {my_apps, populateApps} = require('./seed/seed');
 
