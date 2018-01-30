@@ -46,7 +46,7 @@ AppSchema.methods.generateAuthToken = function () {
     });
 };
 
-AppSchema.statics.findByToken = function (token) {
+AppSchema.statics.findByToken = function (botId) {
     var Bot = this;
     // var decoded;
     //
@@ -62,7 +62,7 @@ AppSchema.statics.findByToken = function (token) {
     // }
 
     return Bot.findOne({
-        'bot_id': token
+        'bot_id': botId
     });
 
 };

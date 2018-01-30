@@ -21,45 +21,61 @@ const AUTHORIZATION_API = "/oauth/token";
 
 app.use(bodyParser.json());
 
-
 app.post('/v1/spaces/:space/messages', (req, res) => {
 
     let bot_id = req.header('x-auth-id');
     let bot_secret = req.header('x-auth');
 
-
-
-
     let space = req.params.space;
+    let ibm_key = null;
 
-    // Build your name from the incoming JSON
-    // var myMsg = req.body.fname + " " + req.body.lname;
+    Bot.findOne({
+        bot_id: bot_id
+    }).then((bot) => {
 
-    getJWTToken(bot_id, bot_secret, function(jwt) {
-        console.log("got JWT! ");
+        if (!bot) {
+            console.log("No bot found");
+            //return res.status(404).send();
+            getJWTToken(bot_id, bot_secret, function(jwt) {
+                console.log("got JWT! ");
+                ibm_key = jwt;
 
-        postMessageToSpace( jwt,space, req, function(success) {
-            if (success) {
-                console.log("Success 200");
-                res.sendStatus(201);
+                postMessageToSpace( ibm_key,space, req, function(success) {
+                    if (success) {
+                        console.log("Success 200");
+                        res.sendStatus(201);
 
-                //when successful I should save to database
+                        //when successful I should save to database
+                        var bot = new Bot({
+                            bot_id: bot_id,
+                            bot_jwt: jwt
+                        });
 
-                var bot = new Bot({
-                    bot_id: bot_id,
-                    bot_jwt: jwt
+                        bot.save();
+                    } else {
+                        console.log("Failure 400!");
+                        res.status(400).end();
+                    }
                 });
+            });
+        }else {
 
-                bot.save();
+            ibm_key = bot.bot_jwt;
 
-            } else {
-                console.log("Failure 400!");
-                res.status(400).end();
-            }
-        })
+            postMessageToSpace( ibm_key,space, req, function(success) {
+                if (success) {
+                    console.log("Success 200");
+                    res.sendStatus(201);
+
+
+                } else {
+                    console.log("Failure 400!");
+                    res.status(400).end();
+                }
+            });
+        }
     });
 });
-
 
 
 //Get an authentication token
@@ -103,7 +119,6 @@ function postMessageToSpace( accessToken,SPACE_ID, req, callback) {
 
     // Calling IWW API to post message
     console.log("Message Sending : ");
-
 
 
     jsonClient.post(urlToPostMessage, messageData, function(err, jsonRes, jsonBody) {
