@@ -1,17 +1,17 @@
-const {Bot} = require('../models/bot');
+const {Bot: WWApp} = require('../models/wwapp');
 
 var authenticate = (req, res, next) => {
     var token = req.header('x-auth-id');
 
-    Bot.findByToken(token).then((bot) => {
-        if (!bot) {
-            console.log("no bot reject");
-            return Promise.reject();//if rejected bot is not in cache
+    WWApp.findByToken(token).then((wwapp) => {
+        if (!wwapp) {
+            console.log("no wwapp reject");
+            return Promise.reject();//if rejected wwapp is not in cache
         }
 
-        console.log("FOUND bot!");
+        console.log("FOUND wwapp!");
 
-        req.bot = bot;
+        req.wwapp = wwapp;
         req.token = token;
         next();
     }).catch((e) => {

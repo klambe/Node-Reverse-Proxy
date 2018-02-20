@@ -3,17 +3,16 @@ const bodyParser = require('body-parser');
 const _ = require('lodash');
 
 const {mongoose} = require('./db/mongoose');
-const {Bot} = require('./models/bot');
+const {WWApp} = require('./models/wwapp');
 const {authenticate} = require('./middleware/authenticate');
 
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-//temp from test bot
+//temp from test wwapp
 var request = require("request");
 var requestjs = require("request-json");
-
 
 
 const WWS_URL = "https://api.watsonwork.ibm.com";
@@ -23,46 +22,46 @@ app.use(bodyParser.json());
 
 app.post('/v1/spaces/:space/messages', (req, res) => {
 
-    let bot_id = req.header('x-auth-id');
-    let bot_secret = req.header('x-auth');
+    let wwapp_id_input = req.header('x-auth-id');
+    let wwapp_secret_input = req.header('x-auth');
 
     let space = req.params.space;
     let ibm_key = null;
 
-    Bot.findOne({
-        bot_id: bot_id
-    }).then((bot) => {
+    WWApp.findOne({
+        wwapp_id: wwapp_id_input
+    }).then((wwapp) => {
 
-        if (!bot) {
-            console.log("No bot found");
+        if (!wwapp) {
+            console.log("No wwapp found");
             //return res.status(404).send();
-            getJWTToken(bot_id, bot_secret, function(jwt) {
+            getJWTToken(wwapp_id_input, wwapp_secret_input, function (jwt) {
                 console.log("got JWT! ");
                 ibm_key = jwt;
 
-                postMessageToSpace( ibm_key,space, req, function(success) {
+                postMessageToSpace(ibm_key, space, req, function (success) {
                     if (success) {
                         console.log("Success 200");
                         res.sendStatus(201);
 
                         //when successful I should save to database
-                        var bot = new Bot({
-                            bot_id: bot_id,
-                            bot_jwt: jwt
+                        var wwapp = new WWApp({
+                            wwapp_id: wwapp_id_input,
+                            wwapp_jwt: jwt
                         });
 
-                        bot.save();
+                        wwapp.save();
                     } else {
                         console.log("Failure 400!");
                         res.status(400).end();
                     }
                 });
             });
-        }else {
+        } else {
 
-            ibm_key = bot.bot_jwt;
+            ibm_key = wwapp.wwapp_jwt;
 
-            postMessageToSpace( ibm_key,space, req, function(success) {
+            postMessageToSpace(ibm_key, space, req, function (success) {
                 if (success) {
                     console.log("Success 200");
                     res.sendStatus(201);
@@ -70,6 +69,12 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
 
                 } else {
                     console.log("Failure 400!");
+                    console.log('ID is: ', wwapp._id);
+
+                    WWApp.findByIdAndRemove(wwapp._id).then((wwapp) => {
+                        console.log(wwapp);
+
+                    });
                     res.status(400).end();
                 }
             });
@@ -94,7 +99,7 @@ function getJWTToken(userid, password, callback) {
     };
 
     // Get the JWT Token
-    request(authenticationOptions, function(err, response, authenticationBody) {
+    request(authenticationOptions, function (err, response, authenticationBody) {
 
         // If successful authentication, a 200 response code is returned
         if (response.statusCode !== 200) {
@@ -109,7 +114,7 @@ function getJWTToken(userid, password, callback) {
 }
 
 //Post a message to a space
-function postMessageToSpace( accessToken,SPACE_ID, req, callback) {
+function postMessageToSpace(accessToken, SPACE_ID, req, callback) {
     var jsonClient = requestjs.createClient(WWS_URL);
     var urlToPostMessage = "/v1/spaces/" + SPACE_ID + "/messages";
     jsonClient.headers.jwt = accessToken;
@@ -121,7 +126,7 @@ function postMessageToSpace( accessToken,SPACE_ID, req, callback) {
     console.log("Message Sending : ");
 
 
-    jsonClient.post(urlToPostMessage, messageData, function(err, jsonRes, jsonBody) {
+    jsonClient.post(urlToPostMessage, messageData, function (err, jsonRes, jsonBody) {
         if (jsonRes.statusCode === 201) {
             console.log("Message posted to IBM Watson Workspace successfully!");
             callback(true);
