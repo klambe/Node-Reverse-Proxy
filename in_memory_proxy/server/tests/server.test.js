@@ -5,7 +5,7 @@ const {ObjectID} = require('mongodb');
 const {app} = require('./../server');
 
 //this is the App Model
-const {Bot} = require('../models/bot');
+const {Bot} = require('../models/wwapp');
 
 const {my_bots, populateBots} = require('./seed/seed');
 
@@ -65,9 +65,8 @@ let messageData = {
 // });
 
 
-
-describe('First test', function() {
-    it('It should always pass', function() {
+describe('First test', function () {
+    it('It should always pass', function () {
         var number1 = 25;
         expect(number1).toEqual(25);
     });
