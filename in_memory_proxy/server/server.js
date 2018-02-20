@@ -1,10 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+
 const _ = require('lodash');
 
-const {mongoose} = require('./db/mongoose');
-const {WWApp} = require('./models/wwapp');
-const {authenticate} = require('./middleware/authenticate');
+// const {mongoose} = require('./db/mongoose');
+// const {WWApp} = require('./models/wwapp');
+// const {authenticate} = require('./middleware/authenticate');
+
+const loki = require('lokijs');
+
 
 
 const app = express();
@@ -18,6 +22,16 @@ var requestjs = require("request-json");
 const WWS_URL = "https://api.watsonwork.ibm.com";
 const AUTHORIZATION_API = "/oauth/token";
 
+//declare in memory database
+let db = new loki('loki.json');
+
+//declare collection wwapps
+let wwapp = db.addCollection('wwapps');
+
+
+
+
+
 app.use(bodyParser.json());
 
 app.post('/v1/spaces/:space/messages', (req, res) => {
@@ -28,11 +42,13 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
     let space = req.params.space;
     let ibm_key = null;
 
-    WWApp.findOne({
-        wwapp_id: wwapp_id_input
-    }).then((wwapp) => {
+    let serach = wwapp.find( {'wwapp_id':wwapp_id_input} );
 
-        if (!wwapp) {
+    // WWApp.findOne({
+    //     wwapp_id: wwapp_id_input
+    // }).then((wwapp) => {
+
+        if (serach.length ===0) {
             console.log("No wwapp found");
             //return res.status(404).send();
             getJWTToken(wwapp_id_input, wwapp_secret_input, function (jwt) {
@@ -45,12 +61,12 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
                         res.sendStatus(201);
 
                         //when successful I should save to database
-                        var wwapp = new WWApp({
+                        wwapp.insert({
                             wwapp_id: wwapp_id_input,
-                            wwapp_jwt: jwt
+                            wwapp_jwt: ibm_key
                         });
 
-                        wwapp.save();
+                        // wwapp.save();
                     } else {
                         console.log("Failure 400!");
                         res.status(400).end();
@@ -59,7 +75,7 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
             });
         } else {
 
-            ibm_key = wwapp.wwapp_jwt;
+            ibm_key = wwapp.get(1).wwapp_jwt;
 
             postMessageToSpace(ibm_key, space, req, function (success) {
                 if (success) {
@@ -71,15 +87,13 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
                     console.log("Failure 400!");
                     console.log('ID is: ', wwapp._id);
 
-                    WWApp.findByIdAndRemove(wwapp._id).then((wwapp) => {
-                        console.log(wwapp);
+                    wwapp.chain().find({ wwapp_id: wwapp_id_input }).remove();
 
-                    });
                     res.status(400).end();
                 }
             });
         }
-    });
+    //});
 });
 
 
