@@ -1,15 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
-const _ = require('lodash');
-
-// const {mongoose} = require('./db/mongoose');
-// const {WWApp} = require('./models/wwapp');
-// const {authenticate} = require('./middleware/authenticate');
-
 const loki = require('lokijs');
-
-
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -29,9 +20,6 @@ let db = new loki('loki.json');
 let wwapp = db.addCollection('wwapps');
 
 
-
-
-
 app.use(bodyParser.json());
 
 app.post('/v1/spaces/:space/messages', (req, res) => {
@@ -44,9 +32,6 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
 
     let serach = wwapp.find( {'wwapp_id':wwapp_id_input} );
 
-    // WWApp.findOne({
-    //     wwapp_id: wwapp_id_input
-    // }).then((wwapp) => {
 
         if (serach.length ===0) {
             console.log("No wwapp found");
@@ -93,7 +78,6 @@ app.post('/v1/spaces/:space/messages', (req, res) => {
                 }
             });
         }
-    //});
 });
 
 
