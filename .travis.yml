@@ -2,13 +2,13 @@ language: node_js
 node_js:
   - "stable"
 
-#before_install:
-#  - cd simple_reverse_proxy
+before_install:
+  - cd simple_reverse_proxy
 
 install:
   - npm install
-script:
-  - node test
+#script:
+ # - node test
 
 services:
   - mongodb
