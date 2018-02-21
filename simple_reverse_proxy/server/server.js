@@ -20,13 +20,18 @@ const AUTHORIZATION_API = "/oauth/token";
 
 app.use(bodyParser.json());
 
-app.post('/v1/spaces/:space/messages', (req, res) => {
+app.post('/:space', (req, res) => {
 
     let wwapp_id_input = req.header('x-auth-id');
     let wwapp_secret_input = req.header('x-auth');
 
     let space = req.params.space;
     let ibm_key = null;
+
+    if(wwapp_id_input == undefined || wwapp_secret_input ==undefined ){
+        res.status(404).end();
+    }
+
 
     WWApp.findOne({
         wwapp_id: wwapp_id_input
