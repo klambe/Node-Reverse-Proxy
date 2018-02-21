@@ -119,6 +119,12 @@ function postMessageToSpace(accessToken, SPACE_ID, req, callback) {
 
     // Building the message
     var messageData = req.body;
+    console.log('***');
+    console.log('***');
+    console.log(messageData);
+    console.log('***');
+    console.log('***');
+    console.log('***');
 
     // Calling IWW API to post message
     console.log("Message Sending : ");
