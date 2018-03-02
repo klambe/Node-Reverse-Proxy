@@ -22,7 +22,7 @@ let wwapp = db.addCollection('wwapps');
 
 app.use(bodyParser.json());
 
-app.post('/v1/spaces/:space/messages', (req, res) => {
+app.post('/:space', (req, res) => {
 
     let wwapp_id_input = req.header('x-auth-id');
     let wwapp_secret_input = req.header('x-auth');
