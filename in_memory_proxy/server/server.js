@@ -84,6 +84,9 @@ app.post('/:space', (req, res) => {
 //Get an authentication token
 function getJWTToken(userid, password, callback) {
     // Build request options for authentication.
+    console.log('ID: '+ userid);
+    console.log('Secret: '+ password);
+    console.log('enviroment variable test is: ' + process.env.KEVIN_TEST);
     const authenticationOptions = {
         "method": "POST",
         "url": `${WWS_URL}${AUTHORIZATION_API}`,

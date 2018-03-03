@@ -28,11 +28,6 @@ app.post('/:space', (req, res) => {
     let space = req.params.space;
     let ibm_key = null;
 
-    if(wwapp_id_input == undefined || wwapp_secret_input ==undefined ){
-        res.status(404).end();
-    }
-
-
     WWApp.findOne({
         wwapp_id: wwapp_id_input
     }).then((wwapp) => {
