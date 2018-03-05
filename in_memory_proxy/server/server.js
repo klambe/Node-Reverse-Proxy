@@ -32,52 +32,74 @@ app.post('/:space', (req, res) => {
 
     let serach = wwapp.find( {'wwapp_id':wwapp_id_input} );
 
+    console.log('serach length is: ' + serach.length);
 
-        if (serach.length ===0) {
-            console.log("No wwapp found");
-            //return res.status(404).send();
-            getJWTToken(wwapp_id_input, wwapp_secret_input, function (jwt) {
-                console.log("got JWT! ");
-                ibm_key = jwt;
 
-                postMessageToSpace(ibm_key, space, req, function (success) {
-                    if (success) {
-                        console.log("Success 200");
-                        res.sendStatus(201);
-
-                        //when successful I should save to database
-                        wwapp.insert({
-                            wwapp_id: wwapp_id_input,
-                            wwapp_jwt: ibm_key
-                        });
-
-                        // wwapp.save();
-                    } else {
-                        console.log("Failure 400!");
-                        res.status(400).end();
-                    }
-                });
-            });
-        } else {
-
-            ibm_key = wwapp.get(1).wwapp_jwt;
+    if (serach.length ===0) {
+        console.log("No wwapp found");
+        //return res.status(404).send();
+        getJWTToken(wwapp_id_input, wwapp_secret_input, function (jwt) {
+            console.log("got JWT! ");
+            ibm_key = jwt;
 
             postMessageToSpace(ibm_key, space, req, function (success) {
                 if (success) {
                     console.log("Success 200");
                     res.sendStatus(201);
 
+                    //when successful I should save to database
+                    wwapp.insert({
+                        wwapp_id: wwapp_id_input,
+                        wwapp_jwt: ibm_key
+                    });
 
+                    let user = wwapp.findObject({'wwapp_id':wwapp_id_input});
+
+                    console.log("saved JWT: " + user.wwapp_jwt) ;
+
+                    // wwapp.save();
                 } else {
                     console.log("Failure 400!");
-                    console.log('ID is: ', wwapp._id);
-
-                    wwapp.chain().find({ wwapp_id: wwapp_id_input }).remove();
-
                     res.status(400).end();
                 }
             });
-        }
+        });
+    } else {
+
+        let user = wwapp.findObject({'wwapp_id':wwapp_id_input});
+        ibm_key = user.wwapp_jwt;
+
+        postMessageToSpace(ibm_key, space, req, function (success) {
+            if (success) {
+                console.log("Success 200");
+                res.sendStatus(201);
+
+
+            } else {
+                console.log("Failure 400!");
+                console.log('ID is: ', wwapp._id);
+
+                wwapp.chain().find({ wwapp_id: wwapp_id_input }).remove();
+
+                res.status(400).end();
+            }
+        });
+    }
+});
+
+app.post('/:id/delete', (req, res) => {
+    let id = req.params.id;
+
+    let user = wwapp.findObject({'wwapp_id':id});
+    console.log("found user: " + user);
+
+    // wwapp.chain().find({ wwapp_id: id }).remove();
+    wwapp.remove(user);
+
+    let user2 = wwapp.findObject({'wwapp_id':id});
+    console.log("Search user: " + user2);
+
+    res.sendStatus(201);
 });
 
 
