@@ -61,6 +61,7 @@ app.post('/:space', (req, res) => {
         } else {
 
             ibm_key = wwapp.get(1).wwapp_jwt;
+            console.log("JWT: " + wwapp.get(1).wwapp_jwt) ;
 
             postMessageToSpace(ibm_key, space, req, function (success) {
                 if (success) {
